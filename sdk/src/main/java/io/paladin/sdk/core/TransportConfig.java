@@ -16,6 +16,10 @@ public record TransportConfig(
         if (maxRetries < 0) throw new IllegalArgumentException("maxRetries must be >= 0");
         if (retryBackoff == null) retryBackoff = Duration.ofMillis(500);
         if (wsEndpoint == null) {
+            // Replace the protocol part only, carefully.
+            // http://localhost:31548 -> ws://localhost:31548
+            // (Note: In mapped environments like Testcontainers, the user must provide the explicit WS endpoint
+            // because the port will be different from the HTTP port).
             wsEndpoint = httpEndpoint.replaceFirst("^http", "ws");
         }
     }

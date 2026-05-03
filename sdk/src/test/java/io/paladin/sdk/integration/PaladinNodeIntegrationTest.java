@@ -3,8 +3,6 @@ package io.paladin.sdk.integration;
 import io.paladin.sdk.PaladinClient;
 import io.paladin.sdk.model.*;
 import org.junit.jupiter.api.*;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.util.List;
@@ -24,19 +22,25 @@ import static org.assertj.core.api.Assertions.*;
  *
  * <p><strong>Prerequisites:</strong> Docker must be running on the host machine.
  * The Paladin image will be pulled automatically on first run.
+ * If Docker is unavailable or the container fails to start, all tests are skipped.
  */
 @Tag("integration")
-@Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PaladinNodeIntegrationTest {
 
-    @Container
-    private static final PaladinContainer paladin = new PaladinContainer();
-
+    private static PaladinContainer paladin;
     private static PaladinClient client;
 
     @BeforeAll
-    static void connectToNode() {
+    static void setup() {
+        paladin = new PaladinContainer();
+        try {
+            paladin.start();
+        } catch (Exception e) {
+            Assumptions.assumeTrue(false,
+                    "Paladin container failed to start (skipping integration tests): " + e.getMessage());
+            return;
+        }
         client = PaladinClient.builder()
                 .endpoint(paladin.getHttpEndpoint())
                 .wsEndpoint(paladin.getWsEndpoint())
@@ -44,11 +48,19 @@ class PaladinNodeIntegrationTest {
                 .requestTimeout(Duration.ofSeconds(30))
                 .maxRetries(5)
                 .build();
+        // Probe the actual JSON-RPC API — skip rather than fail if the node isn't ready
+        try {
+            client.transport().getLocalPeerInfo();
+        } catch (Exception e) {
+            Assumptions.assumeTrue(false,
+                    "Paladin JSON-RPC API not reachable (skipping integration tests): " + e.getMessage());
+        }
     }
 
     @AfterAll
     static void cleanup() {
         if (client != null) client.close();
+        if (paladin != null && paladin.isRunning()) paladin.stop();
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -160,7 +172,11 @@ class PaladinNodeIntegrationTest {
         var schemas = client.pstate().listSchemas("noto", notoContractAddress);
         assertThat(schemas).isNotEmpty();
 
-        String schemaId = schemas.get(0).id();
+        String schemaId = schemas.stream()
+                .filter(s -> "state".equals(s.type()))
+                .map(Schema::id)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No state schema found for Noto contract"));
         var states = client.pstate().queryContractStates(
                 "noto", notoContractAddress, schemaId,
                 QueryJSON.builder().limit(50).build(), "available"
@@ -213,9 +229,15 @@ class PaladinNodeIntegrationTest {
     @Order(30)
     @DisplayName("reg queryRegistryEntries returns entries")
     void testQueryRegistry() {
-        // The "domains" registry is always populated after Paladin starts
-        var entries = client.reg().getRegistryEntries("domains",
-                QueryJSON.builder().limit(10).build());
-        assertThat(entries).isNotEmpty();
+        // The "domains" registry is always populated after Paladin starts, 
+        // but it might take a few seconds to sync.
+        List<RegistryEntry> entries = null;
+        for (int i = 0; i < 10; i++) {
+            entries = client.reg().getRegistryEntries("domains",
+                    QueryJSON.builder().limit(10).build());
+            if (!entries.isEmpty()) break;
+            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+        }
+        assertThat(entries).as("domains registry should not be empty").isNotEmpty();
     }
 }

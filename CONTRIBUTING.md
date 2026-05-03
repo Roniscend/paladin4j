@@ -10,8 +10,8 @@ Thank you for your interest in contributing to the Paladin Java SDK! We welcome 
 
 2. **Clone the Repository**
    ```bash
-   git clone https://github.com/LFDT-Paladin/paladin-java-sdk.git
-   cd paladin-java-sdk
+   git clone https://github.com/Roniscend/paladin4j.git
+   cd paladin4j
    ```
 
 3. **Build the Project**

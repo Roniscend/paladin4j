@@ -159,14 +159,13 @@ public final class JsonRpcTransport implements AutoCloseable {
         }
     }
     private static CompletableFuture<Void> delay(Duration duration) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                Thread.sleep(duration.toMillis());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        return CompletableFuture.runAsync(() -> {},
+                CompletableFuture.delayedExecutor(duration.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS));
     }
+    @Override
     public void close() {
+        // HttpClient does not implement AutoCloseable until JDK 21.
+        // On JDK 17, there is no public API to shut down its internal executor.
+        // When the SDK baseline moves to JDK 21+, call httpClient.close() here.
     }
 }

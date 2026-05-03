@@ -57,7 +57,10 @@ public final class ListenerManager implements AutoCloseable {
         });
         wsTransport.send(JsonRpcRequest.create("ptx_subscribe", listenerId, Map.of(
                 "type", "receipt"
-        )));
+        ))).exceptionally(ex -> {
+            log.error("Failed to send subscription request for listener {}", listenerId, ex);
+            return null;
+        });
         activeListeners.put(listenerId, new ListenerRegistration(listenerId, "receipt"));
         log.info("Registered receipt listener: {}", listenerId);
     }
@@ -79,7 +82,10 @@ public final class ListenerManager implements AutoCloseable {
         });
         wsTransport.send(JsonRpcRequest.create("bidx_subscribe", listenerId, Map.of(
                 "type", "event"
-        )));
+        ))).exceptionally(ex -> {
+            log.error("Failed to send subscription request for listener {}", listenerId, ex);
+            return null;
+        });
         activeListeners.put(listenerId, new ListenerRegistration(listenerId, "event"));
         log.info("Registered blockchain event listener: {}", listenerId);
     }
@@ -96,7 +102,10 @@ public final class ListenerManager implements AutoCloseable {
         wsTransport.send(JsonRpcRequest.create("pgroup_subscribe", listenerId, Map.of(
                 "type", "message",
                 "groupId", groupId
-        )));
+        ))).exceptionally(ex -> {
+            log.error("Failed to send subscription request for listener {}", listenerId, ex);
+            return null;
+        });
         activeListeners.put(listenerId, new ListenerRegistration(listenerId, "message"));
         log.info("Registered group message listener: {} for group {}", listenerId, groupId);
     }

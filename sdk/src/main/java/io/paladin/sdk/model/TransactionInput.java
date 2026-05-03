@@ -26,7 +26,9 @@ public record TransactionInput(
         private String function;
         private String abiReference;
         private static final com.fasterxml.jackson.databind.ObjectMapper MAPPER =
-                new com.fasterxml.jackson.databind.ObjectMapper();
+                new com.fasterxml.jackson.databind.ObjectMapper()
+                        .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+                        .configure(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         private Builder() {}
         public Builder type(TransactionType type) { this.type = type; return this; }
         public Builder domain(String domain) { this.domain = domain; return this; }

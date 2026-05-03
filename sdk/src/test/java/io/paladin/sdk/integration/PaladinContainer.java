@@ -12,14 +12,21 @@ import java.time.Duration;
 /**
  * Testcontainers wrapper for a Paladin node.
  *
- * <p>Provides a Docker-based Paladin node for end-to-end integration testing.
+ * <p>
+ * Provides a Docker-based Paladin node for end-to-end integration testing.
  * The container exposes the JSON-RPC HTTP endpoint and the WebSocket endpoint,
  * enabling full SDK testing against a real node without any mocking.
  *
- * <p>The Docker image can be overridden via the {@code PALADIN_IMAGE} system property
- * or environment variable, defaulting to {@code ghcr.io/lf-decentralized-trust-labs/paladin:latest}.
+ * <p>
+ * The Docker image can be overridden via the {@code PALADIN_IMAGE} system
+ * property
+ * or environment variable, defaulting to
+ * {@code ghcr.io/lf-decentralized-trust-labs/paladin:latest}.
  *
- * <p><strong>Usage:</strong></p>
+ * <p>
+ * <strong>Usage:</strong>
+ * </p>
+ * 
  * <pre>{@code
  * try (PaladinContainer container = new PaladinContainer()) {
  *     container.start();
@@ -34,8 +41,7 @@ public class PaladinContainer extends GenericContainer<PaladinContainer> {
     private static final Logger log = LoggerFactory.getLogger(PaladinContainer.class);
 
     /** Default Paladin Docker image. Override with {@code -DPALADIN_IMAGE=...} */
-    private static final String DEFAULT_IMAGE =
-            "ghcr.io/lf-decentralized-trust-labs/paladin:latest";
+    private static final String DEFAULT_IMAGE = "ghcr.io/lf-decentralized-trust-labs/paladin:latest";
 
     /** The HTTP JSON-RPC port exposed by Paladin. */
     public static final int HTTP_PORT = 31548;
@@ -61,7 +67,7 @@ public class PaladinContainer extends GenericContainer<PaladinContainer> {
         withLogConsumer(new Slf4jLogConsumer(log).withPrefix("paladin"));
         waitingFor(Wait.forHttp("/")
                 .forPort(HTTP_PORT)
-                .forStatusCode(200)
+                .forStatusCodeMatching(status -> status >= 100)
                 .withStartupTimeout(Duration.ofMinutes(3)));
         withStartupTimeout(Duration.ofMinutes(3));
     }

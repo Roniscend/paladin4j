@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   build:
@@ -39,11 +40,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
+      - name: Build and test with Gradle
         run: ./gradlew build --no-daemon
-
-      - name: Run tests
-        run: ./gradlew test --no-daemon
 
       - name: Generate test report
         if: always()

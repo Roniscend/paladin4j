@@ -92,6 +92,6 @@ public final class PstateApi {
      */
     public List<Schema> listSchemas(String domainName, String contractAddress) {
         JavaType listType = mapper.getTypeFactory().constructCollectionType(List.class, Schema.class);
-        return transport.invoke("pstate_listSchemas", listType, domainName, contractAddress);
+        return transport.invoke("pstate_listContractSchemas", listType, domainName, contractAddress);
     }
 }

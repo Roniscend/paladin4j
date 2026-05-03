@@ -1,7 +1,7 @@
 # Paladin4j 🛡️
 
-[![Build & Test](https://github.com/LFDT-Paladin/paladin-java-sdk/actions/workflows/build.yml/badge.svg)](https://github.com/LFDT-Paladin/paladin-java-sdk/actions/workflows/build.yml)
-[![Integration Tests](https://github.com/LFDT-Paladin/paladin-java-sdk/actions/workflows/integration-test.yml/badge.svg)](https://github.com/LFDT-Paladin/paladin-java-sdk/actions/workflows/integration-test.yml)
+[![Build & Test](https://github.com/Roniscend/paladin4j/actions/workflows/build.yml/badge.svg)](https://github.com/Roniscend/paladin4j/actions/workflows/build.yml)
+[![Integration Tests](https://github.com/Roniscend/paladin4j/actions/workflows/integration-test.yml/badge.svg)](https://github.com/Roniscend/paladin4j/actions/workflows/integration-test.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Java 17+](https://img.shields.io/badge/java-17%2B-blue.svg)](https://openjdk.org/projects/jdk/17/)
 

@@ -38,6 +38,9 @@ public final class HexUtils {
      * @throws IllegalArgumentException if the string length is odd or contains invalid characters
      */
     public static byte[] fromHex(String hex) {
+        if (hex == null) {
+            throw new IllegalArgumentException("Hex string must not be null");
+        }
         if (hex.startsWith("0x") || hex.startsWith("0X")) {
             hex = hex.substring(2);
         }

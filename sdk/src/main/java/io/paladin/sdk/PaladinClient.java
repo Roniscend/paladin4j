@@ -53,6 +53,7 @@ public final class PaladinClient implements AutoCloseable {
     private volatile ZetoClient zetoClient;
     private volatile PenteClient penteClient;
     private volatile ListenerManager listenerManager;
+    private volatile CompletableFuture<ListenerManager> listenerFuture;
     private PaladinClient(TransportConfig config, LocalSigner signer) {
         this.config = config;
         this.signer = signer;
@@ -155,18 +156,23 @@ public final class PaladinClient implements AutoCloseable {
         return listenerManager;
     }
     public CompletableFuture<ListenerManager> listenAsync() {
-        if (listenerManager == null) {
-            synchronized (this) {
-                if (listenerManager == null) {
-                    ListenerManager mgr = new ListenerManager(wsTransport, objectMapper);
-                    return wsTransport.connect().thenApply(v -> {
-                        this.listenerManager = mgr;
-                        return mgr;
-                    });
-                }
+        synchronized (this) {
+            if (listenerManager != null) {
+                return CompletableFuture.completedFuture(listenerManager);
             }
+            if (listenerFuture != null) {
+                return listenerFuture;
+            }
+            ListenerManager mgr = new ListenerManager(wsTransport, objectMapper);
+            listenerFuture = wsTransport.connect().thenApply(v -> {
+                synchronized (PaladinClient.this) {
+                    this.listenerManager = mgr;
+                    this.listenerFuture = null;
+                }
+                return mgr;
+            });
+            return listenerFuture;
         }
-        return CompletableFuture.completedFuture(listenerManager);
     }
     /**
      * Returns the local signer configured for this client, or {@code null} if none was set.

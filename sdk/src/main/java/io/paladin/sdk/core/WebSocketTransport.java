@@ -174,13 +174,8 @@ public final class WebSocketTransport implements AutoCloseable {
         }, RECONNECT_DELAY.toSeconds(), TimeUnit.SECONDS);
     }
     private static CompletableFuture<Void> delay(Duration duration) {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                Thread.sleep(duration.toMillis());
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
+        return CompletableFuture.runAsync(() -> {},
+                CompletableFuture.delayedExecutor(duration.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS));
     }
     @Override
     public void close() {
@@ -189,9 +184,14 @@ public final class WebSocketTransport implements AutoCloseable {
             reconnectExecutor.shutdownNow();
             WebSocket ws = activeSocket.getAndSet(null);
             if (ws != null) {
-                ws.sendClose(WebSocket.NORMAL_CLOSURE, "Client closing")
-                        .orTimeout(5, TimeUnit.SECONDS)
-                        .exceptionally(ex -> null);
+                try {
+                    ws.sendClose(WebSocket.NORMAL_CLOSURE, "Client closing")
+                            .orTimeout(5, TimeUnit.SECONDS)
+                            .exceptionally(ex -> null)
+                            .join();
+                } catch (Exception ignored) {
+                    // Best-effort close — don't propagate errors during shutdown
+                }
             }
             subscriptions.clear();
         }

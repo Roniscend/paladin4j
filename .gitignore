@@ -24,8 +24,9 @@ Thumbs.db
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Package Files
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.nar
 *.ear
@@ -48,7 +49,6 @@ bin/
 
 # NetBeans
 nbproject/private/
-build/
 nbbuild/
 dist/
 nbdist/
